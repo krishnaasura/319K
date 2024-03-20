@@ -31,14 +31,14 @@ int main0(void){ // main0
 
 // use main1 for testing
 // does not need ST7735R connected
-int main(void){ // main1
+int main1(void){ // main1
   Clock_Init80MHz(0);
   LaunchPad_Init();
 //Lab6Grader(1) to test SPIOutCommand, no grading
 // Lab6Grader(2) to test SPIOutData, no grading
 // Lab6Grader(3) to test GradeDec2String, no grading
 // Lab6Grader(4) to test all three with grading
-  Lab6Grader(3);
+  Lab6Grader(4);
   while(1){
   }
 }
@@ -69,7 +69,7 @@ int main2(void){
 }
 // using main3 for demonstration
 // needs ST7735R connected
-int main3(void){
+int main(void){
   uint32_t i;
   Clock_Init80MHz(0);
   LaunchPad_Init();

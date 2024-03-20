@@ -86,42 +86,58 @@ udivby10_next:
     .equ currentQuotient, 4
     .equ remainder, 8
     .equ counter, 12
+    .equ n, 16
 //************ALLOCATION PHASE************
 OutDec:
 
     PUSH {R4-R7, LR}
-    SUB SP, #12
-    MOV R7, SP
+    SUB SP, #20
 //************ACCESS PHASE************
-	STR R0, [R7, #inputVal]
-	MOVS R4, #0
+	STR R0, [SP, #inputVal]
+	MOVS R4, #0	//counter
 
-OutDec_LOOP:
+DivideLoop:
 	BL udivby10	//gives back R0 as 16-bit quotient=dividend/10 and R1 as 16-bit remainder=dividend%10 (modulus)
-	STR R0, [R7, #currentQuotient]
-	STR R1, [R7, #remainder]
+	STR R0, [SP, #currentQuotient]
+	STR R1, [SP, #remainder]
 
-	PUSH {R1} //push last digit of current value to stack to output later
 	ADDS R4, #1
-	STR R4, [R7, #counter]
+	CMP R0, #0
+	BEQ SKIP1
+	B DivideLoop
 
-	LDR R5, [R7, #currentQuotient]
-	CMP R5, #0
-	BEQ EXIT
-	LDR R0, [R7, #currentQuotient]
-	B OutDec_LOOP
+SKIP1:
+	STR R4, [SP, #counter]	//stores how many digits the output should have in "counter" local variable
 
-EXIT:
-	LDR R4, [R7, #counter]
-OUTPUTLOOP:
-	POP {R0}
-	ADDS R0, 0x30
-	BL OutChar	//Print
-	SUBS R4, R4, #1	//Decrement counter
+DigitLoop:
+	LDR R0, [SP, #inputVal]
+	LDR R4, [SP, #counter]
+
+InnerDigitLoop:
+	BL udivby10	//gives back R0 as 16-bit quotient=dividend/10 and R1 as 16-bit remainder=dividend%10 (modulus)
+	STR R0, [SP, #currentQuotient]
+	STR R1, [SP, #remainder]
+	STR R1, [SP, #n]
+
+	SUBS R4, #1
 	CMP R4, #0
-	BNE OUTPUTLOOP
+	BEQ PrintDigit
+	B InnerDigitLoop
 
-	ADD SP, SP, #12	//Deallocate
+PrintDigit:
+	LDR R0, [SP, #n]
+	ADDS R0, 0x30
+	BL OutChar
+	LDR R4, [SP, #counter]
+	SUBS R4, #1	//Decrement counter
+	STR R4, [SP, #counter]
+	CMP R4, #0
+	BEQ DONE
+	B DigitLoop
+
+
+DONE:
+	ADD SP, #20	//Deallocate
 	POP{R4-R7, PC}
 
 
