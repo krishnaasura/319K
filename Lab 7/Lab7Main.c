@@ -29,13 +29,22 @@ void OutFix(uint32_t n){
 // resolution is 0.001cm
 // n is integer 0 to 2000
 // output to ST7735 0.000cm to 2.000cm
-    uint32_t val2 = n << 22;
-    val2 = (val2 >> 22);
-    uint32_t val1 = 0;
-    if(n > 1024){
-        val1 = (n & 1024) - 1023;
-    }
-    printf("d=%i.%i cm   ", val1 , val2);
+    uint32_t firstdig = n/1000; //Gets 1st digit
+        n = n%1000; //rest of digits
+        if(n<100)
+        {
+            if(n<10)
+            {
+                printf("d=%i.%i%i%i cm",firstdig, 0, 0, n); //adds 00
+            }
+            else
+            {
+                printf("d=%i.%i%i cm",firstdig, 0, n); //adds 0
+            }
+        }
+        if(n>= 100){
+            printf("d=%i.%i cm",firstdig, n); //Prints it to the screen
+        }
 }
 
 // do not use this function
