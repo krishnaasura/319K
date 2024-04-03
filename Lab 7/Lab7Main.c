@@ -142,7 +142,7 @@ int main3(void){ // main3
 // Position should go from 0 to 2000
 // LCD should show 0.000cm to 2.000 cm
 // OutFixtime is the time to execute OutFix in bus cycles
-int main(void){ // main4
+int main4(void){ // main4
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
@@ -239,7 +239,7 @@ int main5(void){ // main5
 uint32_t Histogram[64]; // probability mass function
 uint32_t Center,SAC;
 #define SCALE 2000
-int main6(void){ // main6
+int main(void){ // main6
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
