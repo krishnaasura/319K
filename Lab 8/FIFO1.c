@@ -9,11 +9,14 @@
 
 // Declare state variables for FiFo
 // size, buffer, put and get indexes
-#define FIFO_SIZE 30
+#define FIFO_SIZE 15
 int32_t static PutI;    //Index to put new
 int32_t static GetI;    //Index of oldest
 
 int32_t static FIFO[FIFO_SIZE];
+
+int8_t Full;
+int8_t Empty;
 
 
 // *********** Fifo1_Init**********
@@ -22,7 +25,8 @@ int32_t static FIFO[FIFO_SIZE];
 // put and get operations
 void Fifo1_Init(){
 //Complete this
-  PutI = GetI = 0;
+  PutI = 0;
+  GetI = 0;
 }
 
 // *********** Fifo1_Put**********
@@ -32,12 +36,20 @@ void Fifo1_Init(){
 //         0 for failure, FIFO1 is full
 uint32_t Fifo1_Put(char data){
   //Complete this routine
-  if( ((PutI + 1)%FIFO_SIZE) == GetI )
+  if(Full)
   {
       return 0;
   }
+  if(Empty)
+  {
+      Empty = 0;
+  }
   FIFO[PutI] = data;
   PutI = (PutI + 1)%FIFO_SIZE;
+  if (PutI == GetI)
+  {
+      Full = 1;
+  }
   return 1;
 }
 
@@ -48,13 +60,21 @@ uint32_t Fifo1_Put(char data){
 //         If the FIFO1 has data, remove it, and return it
 char Fifo1_Get(void){
   //Complete this routine
-  if (GetI == PutI)
+  if(Empty)
   {
       return 0;
   }
+  if(Full)
+  {
+      Full = 0;
+  }
   char data = FIFO[GetI];
   GetI = (GetI + 1)%FIFO_SIZE;
-  return 1;
+  if (GetI == PutI)
+  {
+      Empty = 1;
+  }
+  return data;
 }
 
 

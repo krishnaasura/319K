@@ -16,6 +16,9 @@
 #include "../inc/FIFO1.h"
 #include "UART1.h"
 #include "UART2.h"
+
+void getFrames(uint32_t n);
+
 // ****note to students****
 // the data sheet says the ADC does not work when clock is 80 MHz
 // however, the ADC seems to work on my boards at 80 MHz
@@ -53,7 +56,8 @@ void myFifo_Init(uint32_t size);
 uint32_t myFifo_Put(char data);
 char myFifo_Get(void);
 uint32_t FifoError;
-int main(void){ // use main1 to test your FIFO1
+
+int main1(void){ // use main1 to test your FIFO1
   char me,you;
   char data;
   __disable_irq();
@@ -182,21 +186,45 @@ int main4(void){ // main4, loop back test
   }
 }
 
+uint8_t F1; //FRAME 1
+uint8_t F2; //FRAME 2
+uint8_t F3; //FRAME 3
+uint8_t F4; //FRAME 4
+
 // sampling frequency is 30 Hz
-void TIMG12_IRQHandler(void){uint32_t pos,msg;
-// complete this
+void TIMG12_IRQHandler(void){
+    uint32_t pos,msg;
+    // complete this
   if((TIMG12->CPU_INT.IIDX) == 1){ // this will acknowledge
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
     // increment TransmitCount
+    TransmitCount++;
     // sample
+    msg = ADCin();
+
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
-    // convert to fixed point distance
+
+    msg = Convert(msg);         // convert to fixed point distance
+    getFrames(msg);             // get 4 frames to send in message
+
     // output 4-frame message
- 
- 
+    UART1_OutChar(F1);
+    UART1_OutChar(F2);
+    UART1_OutChar(F3);
+    UART1_OutChar(F4);
+
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
   }
 }
+
+void getFrames(uint32_t num)
+{
+    F1 = num/1000;
+    F2 = (num%1000)/100;
+    F3 = ((num%1000)%100)/10;
+    F4 = ((num%1000)%100)%10;
+}
+
 uint8_t TExaS_LaunchPadLogicPB27PB26(void){
   return (0x80|((GPIOB->DOUT31_0>>26)&0x03));
 }
@@ -206,7 +234,10 @@ uint8_t TExaS_LaunchPadLogicPB27PB26(void){
 // Data should go from 0 to 4095 in transmitter
 // Position should go from 0 to 2000 in receiver
 // LCD should show 0.000cm to 2.000 cm
-int main5(void){ // main5
+int main(void){ // main5
+
+  char f1, f2, f3, f4;    //for received frames
+
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
@@ -220,19 +251,42 @@ int main5(void){ // main5
   ADCinit(); //PB18 = ADC1 channel 5, slidepot
   TExaS_Init(0,0,&TExaS_LaunchPadLogicPB27PB26); // PB27 and PB26
   ST7735_PlotClear(0,2000);
-    // initialize interrupts on TimerG12 at 30 Hz
-  
+  // initialize interrupts on TimerG12 at 30 Hz
+  TimerG12_IntArm(2666667, 1);  //(80x10^6)/2666667 = 30Hz
   __enable_irq();
 
   while(1){
 	  // complete this
-	  
-    // move cursor to top left
-    // wait for first frame
-    // increment ReceiveCount
-	// receive next three frames
-    GPIOB->DOUTTGL31_0 = RED; // toggle PB26 (minimally intrusive debugging)
-      // output message to ST7735
+      // move cursor to top left
+      ST7735_SetCursor(0,0);
+      // wait for first frame
+      f1 = UART2_InChar();
+      if((f1 & 0x80) == 0x80)
+      {
+          // increment ReceiveCount
+          ReceiveCount++;
+          // receive next three frames
+          f2 = UART2_InChar();
+          f3 = UART2_InChar();
+          f4 = UART2_InChar();
+
+          GPIOB->DOUTTGL31_0 = RED; // toggle PB26 (minimally intrusive debugging)
+
+          f1 = f1 - 0x80;
+          if(f1 > 9)
+          {
+              f1 = f1 - 0x30;
+              f2 = f2 - 0x30;
+              f3 = f3 - 0x30;
+              f4 = f4 - 0x30;
+          }
+
+          Position = f1*1000 + f2*100 + f3*10 + f4;
+
+          // output message to ST7735
+          //printf("d=%i.%i%i%i", f1, f2, f3, f4);
+          printf("d=%1.1d.%1.1d%1.1d%1.1d", f1, f2, f3, f4);
+      }
     
     // calculate Position from message
     if((ReceiveCount%15)==0){
