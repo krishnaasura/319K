@@ -208,7 +208,7 @@ void TIMG12_IRQHandler(void){
     getFrames(msg);             // get 4 frames to send in message
 
     // output 4-frame message
-    UART1_OutChar(F1);
+    UART1_OutChar(F1 + (1<<7));
     UART1_OutChar(F2);
     UART1_OutChar(F3);
     UART1_OutChar(F4);
@@ -221,8 +221,8 @@ void getFrames(uint32_t num)
 {
     F1 = num/1000;
     F2 = (num%1000)/100;
-    F3 = ((num%1000)%100)/10;
-    F4 = ((num%1000)%100)%10;
+    F3 = (num%100)/10;
+    F4 = num%10;
 }
 
 uint8_t TExaS_LaunchPadLogicPB27PB26(void){
@@ -286,12 +286,11 @@ int main(void){ // main5
           // output message to ST7735
           //printf("d=%i.%i%i%i", f1, f2, f3, f4);
           printf("d=%1.1d.%1.1d%1.1d%1.1d", f1, f2, f3, f4);
+          // calculate Position from message
+             if((ReceiveCount%15)==0){
+               ST7735_PlotPoint(Position);
+               ST7735_PlotNextErase(); // data plotted at about 2 Hz
       }
-    
-    // calculate Position from message
-    if((ReceiveCount%15)==0){
-      ST7735_PlotPoint(Position);
-      ST7735_PlotNextErase(); // data plotted at about 2 Hz
     }
   }
 }
