@@ -44,13 +44,6 @@ uint32_t ADCin(void){
 //    determine constants k1 k2 to fit Position=(k1*Data + k2)>>12
 uint32_t Convert(uint32_t input){
     return ((2000 * input) >> 12);
-    /*int32_t val;
-    val = input >> 7;
-    val = val - 4;
-    if(val < 0) val = 0;
-    if(val > 11) val = 11;
-    return (val);
-*/
 }
 
 // do not use this function

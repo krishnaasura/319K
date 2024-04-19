@@ -11,8 +11,16 @@ struct Entity
     int8_t ay;  //y acceleration
     uint8_t health; //for if we have bad guys
     uint8_t visible;    //1 for visible, 0 for invisible
-    const uint8_t h, w;    //height and width of sprite
+    uint8_t h, w;    //height and width of sprite
 };
 typedef struct Entity Entity_t;
+
+uint32_t GameConvert(uint32_t input);
+
+void DoodlerInit(Entity_t *doodler);
+
+void UpdateDoodlerPosition(Entity_t *doodler);
+
+void UpdateDoodlerSpeed(Entity_t *doodler);
 
 #endif

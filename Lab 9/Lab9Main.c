@@ -21,6 +21,15 @@
 #include "images/images.h"
 #include "GameEngine.h"
 
+#define UP (1<<24)
+#define DOWN (1<<26)
+#define LEFT (1<<25)
+#define RIGHT (1<<27)
+
+#define RED (1<<17)
+#define YELLOW (1<<28) //Info
+#define GREEN (1<<31)
+
 uint32_t ADCData;
 uint32_t Flag;  // semaphore
 
@@ -53,13 +62,11 @@ void TIMG12_IRQHandler(void){uint32_t pos,msg;
 // game engine goes here
     // 1) sample slide pot
     ADCData = ADCin();
-    ADCData = Convert(ADCData);
-    Doodler.vx = ADCData - 6;
+    ADCData = GameConvert(ADCData);
     // 2) read input switches
     // 3) move sprites
-    Doodler.x = Doodler.x + Doodler.vx;
-    if (Doodler.x >= 190) Doodler.x = 0;
-    if ((Doodler.x > 128) && (Doodler.x < 190)) Doodler.x = 128;
+    UpdateDoodlerSpeed(&Doodler);
+    UpdateDoodlerPosition(&Doodler);
     // 4) start sounds
     // 5) set semaphore
     Flag = 1;
@@ -134,6 +141,8 @@ int main2(void){ // main2
   ST7735_InitPrintf();
     //note: if you colors are weird, see different options for
     // ST7735_InitR(INITR_REDTAB); inside ST7735_InitPrintf()
+
+  /*
   ST7735_FillScreen(ST7735_BLACK);
   ST7735_DrawBitmap(22, 159, PlayerShip0, 18,8); // player ship bottom
   ST7735_DrawBitmap(53, 151, Bunker0, 18,5);
@@ -145,6 +154,10 @@ int main2(void){ // main2
   ST7735_DrawBitmap(40, 9, SmallEnemy20pointA, 16,10);
   ST7735_DrawBitmap(60, 9, SmallEnemy20pointB, 16,10);
   ST7735_DrawBitmap(80, 9, SmallEnemy30pointA, 16,10);
+  */
+
+  ST7735_FillScreen(ST7735_WHITE);
+  ST7735_DrawBitmap(64, 100, DoodlerRight, 19, 21);
 
   for(uint32_t t=500;t>0;t=t-5){
     SmallFont_OutVertical(t,104,6); // top left
@@ -221,31 +234,30 @@ int main(void){ // final main
   // initialize all data structures
   __enable_irq();
 
-  int16_t spdx, x, y;
+  ST7735_FillScreen(ST7735_WHITE);
+  DoodlerInit(&Doodler);
 
   while(1){
-    // wait for semaphore
+      // wait for semaphore
        // clear semaphore
        // update ST7735R
     // check for end game or level switch
       if(Flag){
-          /*
-           * x = player.x
-           * y = player.y
-           * spdx = player.spdx
-           */
-          x = Doodler.x;
-          y = Doodler.y;
-          spdx = Doodler.vx;
 
+          /*
           ST7735_SetCursor(0,0);
-          printf("ADC = %2.2i", ADCData);
+          printf("ADC = %4.4i", ADCData);
           ST7735_SetCursor(0,1);
           printf("X POS = %3.3i", x);
           ST7735_SetCursor(0,2);
           printf("Y POS = %3.3i", y);
           ST7735_SetCursor(0,3);
           printf("X VEL = %1.1i", spdx);
+          */
+
+          ST7735_DrawBitmap(Doodler.x, Doodler.y, DoodlerRight, Doodler.w, Doodler.h);
+
+
           Flag = 0;
       }
   }
