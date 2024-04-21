@@ -30,4 +30,6 @@ void SetOldPosition(Entity_t *entity);
 
 void CheckForCollision(Entity_t *doodler);
 
+void UpdatePlatforms();
+
 #endif

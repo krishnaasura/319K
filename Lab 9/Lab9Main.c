@@ -85,6 +85,7 @@ void TIMG12_IRQHandler(void){uint32_t pos,msg;
     UpdateDoodlerSpeed(&Doodler);
     UpdateDoodlerPosition(&Doodler);
     CheckForCollision(&Doodler);
+    UpdatePlatforms();
     // 4) start sounds
     // 5) set semaphore
     Flag = 1;

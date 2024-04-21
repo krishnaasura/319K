@@ -23,6 +23,7 @@ void DisplayPlatforms()
 {
     for(uint8_t i = 0; i < NumOfPlatforms; i++)
     {
+        ST7735_DrawBitmap(Platforms[i].xOld, Platforms[i].yOld, PlatformBlank, Platforms[i].w, Platforms[i].h);
         ST7735_DrawBitmap(Platforms[i].x, Platforms[i].y, PlatformGreen, Platforms[i].w, Platforms[i].h);
     }
 }

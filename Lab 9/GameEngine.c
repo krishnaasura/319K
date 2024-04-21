@@ -26,6 +26,8 @@
 extern uint32_t ADCData;
 extern Entity_t Platforms[NumOfPlatforms];
 
+uint8_t PlatformCollisionFlag = 0;
+
 uint32_t GameConvert(uint32_t input)
 {
     int32_t val;
@@ -77,10 +79,10 @@ void UpdateDoodlerPosition(Entity_t *doodler)
     doodler->vy = doodler->vy + doodler->ay;    //y velocity += y acceleration
     int16_t ytemp = doodler->y + doodler->vy;   //y position += y velocity
 
-    //if doodler hits the ground, shoot him back up
+    //if doodler hits the ground, shoot him back up (REMOVE LATER)
     if(ytemp >= 159)
     {
-        doodler->vy = -10;
+        doodler->vy = -13;
     }
     doodler->y = ytemp;
 }
@@ -107,20 +109,51 @@ void CheckForCollision(Entity_t *doodler)
             int16_t xDiff = doodler->x - Platforms[i].x;
             if((xDiff < 27) && (xDiff > -19))
             {
-                if(((Platforms[i].y + 7) > (doodler->y + 13)) && ((doodler->y + 13) > Platforms[i].y))
+                if(((Platforms[i].y + 7) > (doodler->y + 15)) && ((doodler->y + 15) > Platforms[i].y))
                 {
-                    doodler->vy = -10;
+                    doodler->vy = -11;
+                    PlatformCollisionFlag = 1;
                 }
             }
         }
      }
 }
 
+void UpdatePlatforms()
+{
+    for(uint8_t i = 0; i < NumOfPlatforms; i++)
+    {
+        Platforms[i].xOld = Platforms[i].x;
+        Platforms[i].yOld = Platforms[i].y;
+        Platforms[i].vy = Platforms[i].vy + Platforms[i].ay;
+        Platforms[i].y = Platforms[i].y + Platforms[i].vy;
+    }
 
-/*
-             if(Platforms[i].x >= x && Platforms[i].x < (x+19)){
-                if((Platforms[i].y + 21) < y){
-                    doodler->vy = -10;
+    if(PlatformCollisionFlag == 1)
+    {
+        for(uint8_t i = 0; i < NumOfPlatforms; i++)
+        {
+            Platforms[i].vy = 10;
+            Platforms[i].ay = -1;
+        }
+        PlatformCollisionFlag = 0;
+    }
+
+    for(uint8_t i = 0; i < NumOfPlatforms; i++)
+    {
+        if(Platforms[i].y > 165)
+        {
+            Platforms[i].y = 0;
+            Platforms[i].x = Random(101);
+        }
+    }
+
+    if(Platforms[0].vy <= 0)
+    {
+        for(uint8_t i = 0; i < NumOfPlatforms; i++)
+                {
+                    Platforms[i].ay = 0;
+                    Platforms[i].vy = 0;
                 }
-            }
- */
+    }
+}
