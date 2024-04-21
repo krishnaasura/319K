@@ -18,8 +18,10 @@
 #include "LED.h"
 #include "Switch.h"
 #include "Sound.h"
-#include "images/images.h"
+//#include "images/images.h"
 #include "GameEngine.h"
+#include "Graphics.h"
+#include "Lab9Main.h"
 
 #define UP (1<<24)
 #define DOWN (1<<26)
@@ -34,6 +36,7 @@ uint32_t ADCData;
 uint32_t Flag;  // semaphore
 
 Entity_t Doodler;
+Entity_t Platforms[NumOfPlatforms];
 
 // ****note to ECE319K students****
 // the data sheet says the ADC does not work when clock is 80 MHz
@@ -45,12 +48,26 @@ void PLL_Init(void){ // set phase lock loop (PLL)
 }
 
 uint32_t M=1;
+
+void Random_Init(uint32_t val)
+{
+    M = val;
+}
+
 uint32_t Random32(void){
   M = 1664525*M+1013904223;
   return M;
 }
 uint32_t Random(uint32_t n){
   return (Random32()>>16)%n;
+}
+
+void SysTick_Start(uint32_t period){
+  // write this
+  // set reload value
+  // write any value to VAL, cause reload
+    SysTick->LOAD = (period - 1);
+    SysTick->VAL = 0;
 }
 
 
@@ -67,6 +84,7 @@ void TIMG12_IRQHandler(void){uint32_t pos,msg;
     // 3) move sprites
     UpdateDoodlerSpeed(&Doodler);
     UpdateDoodlerPosition(&Doodler);
+    CheckForCollision(&Doodler);
     // 4) start sounds
     // 5) set semaphore
     Flag = 1;
@@ -157,7 +175,7 @@ int main2(void){ // main2
   */
 
   ST7735_FillScreen(ST7735_WHITE);
-  ST7735_DrawBitmap(64, 100, DoodlerRight, 19, 21);
+  //ST7735_DrawBitmap(64, 100, DoodlerRight, 19, 21);
 
   for(uint32_t t=500;t>0;t=t-5){
     SmallFont_OutVertical(t,104,6); // top left
@@ -233,11 +251,23 @@ int main(void){ // final main
   TimerG12_IntArm(80000000/30,2);
   // initialize all data structures
   __enable_irq();
+  //Initialize SysTick
+  SysTick_Init();
+  SysTick_Start(4294967295);
 
   ST7735_FillScreen(ST7735_WHITE);
+
+  while((Switch_In() & UP) != UP)
+  {
+
+  }
+  Random_Init(SysTick->VAL);
   DoodlerInit(&Doodler);
+  PlatformsInit();
 
   while(1){
+      uint8_t test;
+      test = Random32()>>25;
       // wait for semaphore
        // clear semaphore
        // update ST7735R
@@ -255,8 +285,8 @@ int main(void){ // final main
           printf("X VEL = %1.1i", spdx);
           */
 
-          ST7735_DrawBitmap(Doodler.x, Doodler.y, DoodlerRight, Doodler.w, Doodler.h);
-
+          DisplayPlatforms();
+          DisplayDoodler();
 
           Flag = 0;
       }
