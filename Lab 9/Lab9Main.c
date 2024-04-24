@@ -22,6 +22,7 @@
 #include "GameEngine.h"
 #include "Graphics.h"
 #include "Lab9Main.h"
+#include "MenuHandler.h"
 
 #define UP (1<<24)
 #define DOWN (1<<26)
@@ -34,9 +35,25 @@
 
 uint32_t ADCData;
 uint32_t Flag;  // semaphore
+uint32_t switchDataOld;
+uint32_t switchData;
 
 Entity_t Doodler;
 Entity_t Platforms[NumOfPlatforms];
+
+uint8_t MAINMENU = 1;
+uint8_t GAMESTART;
+uint8_t PAUSE;
+uint8_t GAMEINITDONE;
+uint8_t ENGLISH = 1;
+uint8_t SPANISH;
+uint8_t LANGSWITCH;
+uint8_t OPTIONS;
+uint8_t TRANSITION = 1;
+uint8_t GAMEEND;
+uint8_t STORE;
+
+extern uint32_t Score;
 
 // ****note to ECE319K students****
 // the data sheet says the ADC does not work when clock is 80 MHz
@@ -78,16 +95,36 @@ void TIMG12_IRQHandler(void){uint32_t pos,msg;
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
 // game engine goes here
     // 1) sample slide pot
-    ADCData = ADCin();
-    ADCData = GameConvert(ADCData);
     // 2) read input switches
     // 3) move sprites
-    UpdateDoodlerSpeed(&Doodler);
-    UpdateDoodlerPosition(&Doodler);
-    CheckForCollision(&Doodler);
-    UpdatePlatforms();
     // 4) start sounds
     // 5) set semaphore
+    if(GAMESTART && !PAUSE)
+    {
+        ADCData = ADCin();
+        switchDataOld = switchData;
+        switchData = Switch_In();
+        UpdateDoodlerSpeed(&Doodler);
+        UpdateDoodlerPosition(&Doodler);
+        CheckForCollision(&Doodler);
+        UpdatePlatforms();
+        CheckForPause(&Doodler);
+    }
+    if(MAINMENU)
+    {
+        UpdateDoodlerPosition(&Doodler);
+        CheckForCollision(&Doodler);
+
+        switchDataOld = switchData;
+        switchData = Switch_In();
+    }
+    if(PAUSE)
+    {
+        switchDataOld = switchData;
+        switchData = Switch_In();
+        CheckforUnpause(&Doodler);
+    }
+
     Flag = 1;
     // NO LCD OUTPUT IN INTERRUPT SERVICE ROUTINES
     GPIOB->DOUTTGL31_0 = GREEN; // toggle PB27 (minimally intrusive debugging)
@@ -235,7 +272,7 @@ int main4(void){ uint32_t last=0,now;
   }
 }
 // ALL ST7735 OUTPUT MUST OCCUR IN MAIN
-int main(void){ // final main
+  int main(void){ // final main
   __disable_irq();
   PLL_Init(); // set bus speed
   LaunchPad_Init();
@@ -256,38 +293,39 @@ int main(void){ // final main
   SysTick_Init();
   SysTick_Start(4294967295);
 
-  ST7735_FillScreen(ST7735_WHITE);
-
-  while((Switch_In() & UP) != UP)
-  {
-
-  }
   Random_Init(SysTick->VAL);
-  DoodlerInit(&Doodler);
-  PlatformsInit();
+
+  MenuInit();
 
   while(1){
-      uint8_t test;
-      test = Random32()>>25;
       // wait for semaphore
        // clear semaphore
        // update ST7735R
     // check for end game or level switch
-      if(Flag){
-
-          /*
-          ST7735_SetCursor(0,0);
-          printf("ADC = %4.4i", ADCData);
-          ST7735_SetCursor(0,1);
-          printf("X POS = %3.3i", x);
-          ST7735_SetCursor(0,2);
-          printf("Y POS = %3.3i", y);
-          ST7735_SetCursor(0,3);
-          printf("X VEL = %1.1i", spdx);
-          */
-
-          DisplayPlatforms();
-          DisplayDoodler();
+      if(Flag)
+      {
+          if(GAMESTART && !PAUSE)
+          {                                   // If game has started run this
+              if(!GAMEINITDONE)
+              {
+                  ClearMenu();
+                  DoodlerInit(&Doodler, 60, 80);
+                  PlatformsInit();
+                  Score = 0;
+                  GAMEINITDONE = 1;
+              }
+              DisplayPlatforms();
+              DisplayDoodler();
+              DisplayScore();
+          }
+          else if(GAMESTART && PAUSE)
+          {
+              //pauseHandler();                               // Handles pause menu
+          }
+          else if(MAINMENU) //game has not started, show menu
+          {
+              MenuHandler();                     // Handles menus
+          }
 
           Flag = 0;
       }

@@ -5,4 +5,16 @@ void DisplayPlatforms();
 
 void DisplayDoodler();
 
+void DisplayTitle();
+
+void DisplayMenuPlatform();
+
+void ClearMenu();
+
+void DisplayOptions();
+
+void DisplayScore();
+
+void DisplayGameOver();
+
 #endif

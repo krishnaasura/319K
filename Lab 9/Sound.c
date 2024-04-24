@@ -11,20 +11,42 @@
 #include "../inc/Timer.h"
 
 
+uint32_t x; //index
 void SysTick_IntArm(uint32_t period, uint32_t priority){
   // write this
+    x = 0;
+    SysTick->CTRL = 0;
+    SysTick->LOAD = (period - 1);
+    SCB->SHP[1] = (SCB->SHP[1]&(~0xC0000000)) | priority<<30; //Copied from textbook
+    SysTick->VAL = 0;
+    SysTick->CTRL = 0x07;
 }
 // initialize a 11kHz SysTick, however no sound should be started
 // initialize any global variables
 // Initialize the 5 bit DAC
 void Sound_Init(void){
 // write this
+    SysTick_IntArm(1, 1);
+    DAC5_Init();
+
   
 }
+//volatile uint32_t Count;
+uint8_t soundPick;
 void SysTick_Handler(void){ // called at 11 kHz
   // output one value to DAC if a sound is active
+  /*GPIOB->DOUTTGL31_0 = (1<<27);
+  GPIOB->DOUTTGL31_0 = (1<<27);
+  Count++;
+  GPIOB->DOUTTGL31_0 = (1<<27);*/
+  /*GPIOB->DOUT31_0 = (GPIOB->DOUT31_0 & (~0x0F)) | */
+    if (soundPick == 1){
+       Sound_Bounce();
+    }
+    if (soundPick == 2){
+        Sound_Killed();
+    }
     
-	
 }
 
 //******* Sound_Start ************
@@ -37,16 +59,36 @@ void SysTick_Handler(void){ // called at 11 kHz
 //        count is the length of the array
 // Output: none
 // special cases: as you wish to implement
-void Sound_Start(const uint8_t *pt, uint32_t count){
+void Sound_Start(uint8_t select, uint32_t count){
 // write this
-  
+    SysTick->LOAD = (count - 1);
+    SysTick->VAL = 0;
+    soundPick = select;
+    x = 0;
+
+
 }
-void Sound_Shoot(void){
+void Sound_Stop(){
+    SysTick->LOAD = 0;
+    x = 0;
+}
+void Sound_Bounce(void){
 // write this
+    if (x > 9614){
+        Sound_Stop();
+    }
+    DAC5_Out(Pop[x]);
+    x++;
+
   
 }
 void Sound_Killed(void){
 // write this
+    if (x > 5480){
+            Sound_Stop();
+        }
+        DAC5_Out(Fall[x]);
+        x++;
   
 }
 void Sound_Explosion(void){
