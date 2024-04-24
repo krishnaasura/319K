@@ -32,7 +32,7 @@ void Sound_Init(void){
   
 }
 //volatile uint32_t Count;
-uint16_t soundPick;
+uint8_t soundPick;
 void SysTick_Handler(void){ // called at 11 kHz
   // output one value to DAC if a sound is active
   /*GPIOB->DOUTTGL31_0 = (1<<27);
@@ -59,7 +59,7 @@ void SysTick_Handler(void){ // called at 11 kHz
 //        count is the length of the array
 // Output: none
 // special cases: as you wish to implement
-void Sound_Start(uint16_t select, uint32_t count){
+void Sound_Start(uint8_t select, uint32_t count){
 // write this
     SysTick->LOAD = (count - 1);
     SysTick->VAL = 0;
@@ -74,7 +74,7 @@ void Sound_Stop(){
 }
 void Sound_Bounce(void){
 // write this
-    if (x > 999){
+    if (x > 9614){
         Sound_Stop();
     }
     DAC5_Out(Pop[x]);
@@ -84,7 +84,7 @@ void Sound_Bounce(void){
 }
 void Sound_Killed(void){
 // write this
-    if (x > 999){
+    if (x > 5480){
             Sound_Stop();
         }
         DAC5_Out(Fall[x]);
