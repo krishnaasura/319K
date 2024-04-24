@@ -74,7 +74,7 @@ void Sound_Stop(){
 }
 void Sound_Bounce(void){
 // write this
-    if (x > 9614){
+    if (x > 1402){
         Sound_Stop();
     }
     DAC5_Out(Pop[x]);
@@ -84,7 +84,7 @@ void Sound_Bounce(void){
 }
 void Sound_Killed(void){
 // write this
-    if (x > 5480){
+    if (x > 4606){
             Sound_Stop();
         }
         DAC5_Out(Fall[x]);

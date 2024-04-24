@@ -290,8 +290,8 @@ int main4(void){ uint32_t last=0,now;
   // initialize all data structures
   __enable_irq();
   //Initialize SysTick
-  SysTick_Init();
-  SysTick_Start(4294967295);
+  //SysTick_Init();
+  //SysTick_Start(4294967295);
 
   Random_Init(SysTick->VAL);
 

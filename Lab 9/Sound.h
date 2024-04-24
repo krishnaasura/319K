@@ -28,7 +28,7 @@ void Sound_Init(void);
 // Output: none
 // special cases: as you wish to implement
 void Sound_Start(uint8_t select, uint32_t count);
-
+void SysTick_Handler(void);
 // following 8 functions do not output to the DAC
 // they configure pointers/counters and initiate the sound by calling Sound_Start
 void Sound_Bounce(void);

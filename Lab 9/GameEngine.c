@@ -162,6 +162,7 @@ void CheckForCollision(Entity_t *doodler)
                 //if(((Platforms[i].y + 14) > (doodler->y + 21)) && ((doodler->y + 21) > (Platforms[i].y + 7)))
                 if((Platforms[i].y > doodler->y) && (doodler->y > (Platforms[i].y - 8)))
                 {
+                    Sound_Start(1, 3500);   //Pop sound
                     doodler->vy = -55;
                     PlatformCollisionFlag = 1;
                 }
@@ -288,6 +289,8 @@ void RemoveDoodler(Entity_t *doodler)
 
 void GameEnd(Entity_t *doodler)
 {
+    Sound_Start(2, 5000);   //Fall sound
+
     GAMESTART = 0;
     MAINMENU = 1;
     GAMEEND = 1;
@@ -306,7 +309,6 @@ void CheckForPause(Entity_t *doodler)
 
     if(((switchData & UP) == UP) && (switchDataOld == 0))
     {
-        //Sound_Start(1, 10000);
         PAUSE = 1;
         STORE = 1;
     }
